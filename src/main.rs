@@ -46,7 +46,10 @@ fn main() {
     // app.add_plugins(RngPlugin::default());
 
     if args.editor {
-        app.add_plugins((YoleckPluginForEditor, Vpeol3dPluginForEditor::topdown()));
+        app.add_plugins((
+            YoleckPluginForEditor,
+            Vpeol3dPluginForEditor::sidescroller(),
+        ));
         app.add_plugins(SkeinPlugin::default());
     } else {
         app.add_plugins((YoleckPluginForGame, Vpeol3dPluginForGame));
