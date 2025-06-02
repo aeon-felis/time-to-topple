@@ -5,7 +5,6 @@ use bevy_egui::EguiPlugin;
 use bevy_egui_kbgp::prelude::*;
 use bevy_enhanced_input::EnhancedInputPlugin;
 use bevy_pkv::PkvStore;
-use bevy_skein::SkeinPlugin;
 use bevy_tnua::prelude::TnuaControllerPlugin;
 use bevy_tnua_avian2d::TnuaAvian2dPlugin;
 use bevy_yoleck::vpeol_3d::{Vpeol3dPluginForEditor, Vpeol3dPluginForGame};
@@ -53,10 +52,8 @@ fn main() {
             YoleckPluginForEditor,
             Vpeol3dPluginForEditor::sidescroller(),
         ));
-        app.add_plugins(SkeinPlugin::default());
     } else {
         app.add_plugins((YoleckPluginForGame, Vpeol3dPluginForGame));
-        app.add_plugins(SkeinPlugin { handle_brp: false });
         app.add_plugins(KbgpPlugin);
         app.insert_resource(KbgpSettings {
             disable_default_navigation: true,
