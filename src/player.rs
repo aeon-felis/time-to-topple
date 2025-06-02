@@ -22,7 +22,12 @@ impl Plugin for PlayerPlugin {
         app.add_systems(YoleckSchedule::Populate, populate_player);
         app.add_systems(
             Update,
-            (set_player_facing, #[cfg(any())]animate_player).in_set(During::Gameplay),
+            (
+                set_player_facing,
+                #[cfg(any())]
+                animate_player,
+            )
+                .in_set(During::Gameplay),
         );
         app.add_systems(Update, kill_player_when_they_fall.in_set(During::Gameplay));
     }
@@ -211,7 +216,6 @@ fn kill_player_when_they_fall(
         return;
     };
     for player_transform in players_query.iter() {
-        info!("Player at {}, Lowest Y {lowest_y}", player_transform.translation().y);
         let player_below_level = player_transform.translation().y - lowest_y;
         if player_below_level < -50.0 {
             app_state.set(AppState::GameOver);

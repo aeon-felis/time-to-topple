@@ -3,6 +3,7 @@ mod camera;
 mod level_handling;
 mod menu;
 mod player;
+mod player_controls;
 mod utils;
 
 use bevy::prelude::*;
@@ -13,6 +14,7 @@ use self::camera::TimeToToppleCameraPlugin;
 use self::level_handling::{LevelHandlingPlugin, LevelProgress};
 use self::menu::MenuPlugin;
 use self::player::PlayerPlugin;
+use self::player_controls::PlayerControlsPlugin;
 
 pub struct TimeToTopplePlugin {
     pub is_editor: bool,
@@ -57,7 +59,7 @@ impl Plugin for TimeToTopplePlugin {
         // app.add_plugins(AnimatingPlugin);
         app.add_plugins(PlayerPlugin);
         app.add_plugins(ArenaPlugin);
-        // app.add_plugins(PlayerControlsPlugin);
+        app.add_plugins(PlayerControlsPlugin);
         // app.add_plugins(CannonPlugin);
         // app.add_plugins(MissilePlugin);
         // app.add_plugins(ExplosionPlugin);

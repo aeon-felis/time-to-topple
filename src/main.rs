@@ -3,6 +3,7 @@ use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use bevy_egui_kbgp::prelude::*;
+use bevy_enhanced_input::EnhancedInputPlugin;
 use bevy_pkv::PkvStore;
 use bevy_skein::SkeinPlugin;
 use bevy_tnua::prelude::TnuaControllerPlugin;
@@ -44,6 +45,8 @@ fn main() {
     app.insert_resource(PkvStore::new("AeonFelis", "TimeToTopple"));
 
     // app.add_plugins(RngPlugin::default());
+
+    app.add_plugins(EnhancedInputPlugin);
 
     if args.editor {
         app.add_plugins((
