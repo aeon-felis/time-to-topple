@@ -28,7 +28,8 @@ fn populate_brick(mut populate: YoleckPopulate<(), With<IsBrick>>, asset_server:
         }
         cmd.insert(RigidBody::Dynamic);
         cmd.insert(Collider::rectangle(0.2, 4.0));
-        cmd.insert(Friction::new(10.0));
+        cmd.insert(Friction::new(0.1));
         cmd.insert(Mass(10.0));
+        cmd.insert(GravityScale(5.0));
     });
 }

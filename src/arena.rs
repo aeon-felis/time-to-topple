@@ -37,6 +37,7 @@ fn populate_block(mut populate: YoleckPopulate<(), With<IsBlock>>, mut pbr: Cach
             ));
             cmd.insert(RigidBody::Static);
             cmd.insert(Collider::rectangle(1.0, 1.0));
+            cmd.insert(Friction::new(10.0));
         }
     });
 }
