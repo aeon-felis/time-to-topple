@@ -1,4 +1,5 @@
 mod arena;
+mod brick;
 mod camera;
 mod level_handling;
 mod menu;
@@ -10,6 +11,7 @@ use bevy::prelude::*;
 use bevy_yoleck::prelude::YoleckSyncWithEditorState;
 
 use self::arena::ArenaPlugin;
+use self::brick::BrickPlugin;
 use self::camera::TimeToToppleCameraPlugin;
 use self::level_handling::{LevelHandlingPlugin, LevelProgress};
 use self::menu::MenuPlugin;
@@ -60,6 +62,7 @@ impl Plugin for TimeToTopplePlugin {
         app.add_plugins(PlayerPlugin);
         app.add_plugins(ArenaPlugin);
         app.add_plugins(PlayerControlsPlugin);
+        app.add_plugins(BrickPlugin);
         // app.add_plugins(CannonPlugin);
         // app.add_plugins(MissilePlugin);
         // app.add_plugins(ExplosionPlugin);

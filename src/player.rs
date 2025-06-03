@@ -77,7 +77,8 @@ fn populate_player(
         // cmd.insert(VisibilityBundle::default());
         cmd.insert(RigidBody::Dynamic);
         // cmd.insert(Velocity::default());
-        cmd.insert(Collider::capsule(0.25, 0.5));
+        cmd.insert(Collider::capsule(0.5, 0.5));
+        cmd.insert(Friction::ZERO);
 
         cmd.insert(TnuaController::default());
         cmd.insert(LockedAxes::ROTATION_LOCKED);
