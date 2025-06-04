@@ -8,6 +8,7 @@ use bevy_yoleck::vpeol_3d::Vpeol3dPosition;
 use ordered_float::OrderedFloat;
 
 use crate::arena::IsBlock;
+use crate::picking_up::Picker;
 use crate::{AppState, During};
 
 pub struct PlayerPlugin;
@@ -43,10 +44,17 @@ pub enum PlayerFacing {
 }
 
 impl PlayerFacing {
-    pub fn direction(&self) -> Vec3 {
+    pub fn direction(&self) -> Dir3 {
         match self {
-            PlayerFacing::Left => Vec3::NEG_X,
-            PlayerFacing::Right => Vec3::X,
+            PlayerFacing::Left => Dir3::NEG_X,
+            PlayerFacing::Right => Dir3::X,
+        }
+    }
+
+    pub fn direction_2d(&self) -> Dir2 {
+        match self {
+            PlayerFacing::Left => Dir2::NEG_X,
+            PlayerFacing::Right => Dir2::X,
         }
     }
 }
@@ -93,6 +101,8 @@ fn populate_player(
 
         // cmd.insert(Killable::default());
         cmd.insert(TnuaAnimatingState::<PlayerAnimationState>::default());
+
+        cmd.insert(Picker::default());
     });
 }
 
@@ -104,7 +114,7 @@ fn set_player_facing(
         let Ok(facing) = players_query.get(rotation_based_on.0) else {
             continue;
         };
-        transform.look_at(facing.direction(), Vec3::Y);
+        transform.look_at(*facing.direction(), Vec3::Y);
     }
 }
 

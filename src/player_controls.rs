@@ -4,6 +4,7 @@ use bevy_tnua::prelude::*;
 use bevy_yoleck::prelude::*;
 
 use crate::During;
+use crate::picking_up::PlayerPickUp;
 use crate::player::{IsPlayer, PlayerFacing};
 
 #[derive(InputAction, Debug)]
@@ -49,6 +50,13 @@ fn add_controls_to_player(mut populate: YoleckPopulate<(), With<IsPlayer>>) {
         input_map
             .bind::<PlayerJump>()
             .to((KeyCode::Space, KeyCode::KeyJ, GamepadButton::South));
+
+        input_map.bind::<PlayerPickUp>().to((
+            KeyCode::ControlLeft,
+            KeyCode::ControlRight,
+            KeyCode::KeyK,
+            GamepadButton::West,
+        ));
         cmd.insert(input_map);
     });
 }

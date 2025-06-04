@@ -3,6 +3,7 @@ mod brick;
 mod camera;
 mod level_handling;
 mod menu;
+mod picking_up;
 mod player;
 mod player_controls;
 mod utils;
@@ -15,6 +16,7 @@ use self::brick::BrickPlugin;
 use self::camera::TimeToToppleCameraPlugin;
 use self::level_handling::{LevelHandlingPlugin, LevelProgress};
 use self::menu::MenuPlugin;
+use self::picking_up::PickingUpPlugin;
 use self::player::PlayerPlugin;
 use self::player_controls::PlayerControlsPlugin;
 
@@ -63,11 +65,7 @@ impl Plugin for TimeToTopplePlugin {
         app.add_plugins(ArenaPlugin);
         app.add_plugins(PlayerControlsPlugin);
         app.add_plugins(BrickPlugin);
-        // app.add_plugins(CannonPlugin);
-        // app.add_plugins(MissilePlugin);
-        // app.add_plugins(ExplosionPlugin);
-        // app.add_plugins(DoorPlugin);
-        // app.add_plugins(ArrowPlugin);
+        app.add_plugins(PickingUpPlugin);
         //app.add_plugins(FloatingTextPlugin);
 
         app.add_systems(Update, enable_disable_physics);
