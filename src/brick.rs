@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_yoleck::prelude::*;
 use bevy_yoleck::vpeol_3d::Vpeol3dPosition;
 
-use crate::picking_up::IsPickable;
+use crate::picking_up::Pickable;
 
 pub struct BrickPlugin;
 
@@ -18,7 +18,14 @@ impl Plugin for BrickPlugin {
         app.add_yoleck_entity_type({
             YoleckEntityType::new("PickableBrick")
                 .with::<Vpeol3dPosition>()
-                .insert_on_init(|| (IsBrick, IsPickable))
+                .insert_on_init(|| {
+                    (
+                        IsBrick,
+                        Pickable {
+                            hold_at_offset: -2.0 * Vec2::Y,
+                        },
+                    )
+                })
         });
 
         app.add_systems(YoleckSchedule::Populate, populate_brick);
@@ -29,7 +36,7 @@ impl Plugin for BrickPlugin {
 pub struct IsBrick;
 
 fn populate_brick(
-    mut populate: YoleckPopulate<Has<IsPickable>, With<IsBrick>>,
+    mut populate: YoleckPopulate<Has<Pickable>, With<IsBrick>>,
     asset_server: Res<AssetServer>,
 ) {
     populate.populate(|ctx, mut cmd, pickable| {

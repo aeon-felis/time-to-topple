@@ -4,7 +4,7 @@ use bevy_tnua::prelude::*;
 use bevy_yoleck::prelude::*;
 
 use crate::During;
-use crate::picking_up::PlayerPickUp;
+use crate::picking_up::{Picker, PlayerPickUp};
 use crate::player::{IsPlayer, PlayerFacing};
 
 #[derive(InputAction, Debug)]
@@ -67,10 +67,15 @@ fn apply_controls(
         &Actions<PlayerOnFoot>,
         &mut TnuaController,
         &mut PlayerFacing,
+        &Picker,
     )>,
 ) {
-    for (input, mut controller, mut player_facing) in query.iter_mut() {
+    for (input, mut controller, mut player_facing, picker) in query.iter_mut() {
         let controller = controller.as_mut();
+        if picker.immobilized {
+            controller.neutralize_basis();
+            continue;
+        }
         let x_input = input.value::<PlayerRun>().unwrap().as_axis1d();
         let desired_velocity = Vec3::X * 20.0 * x_input;
 
