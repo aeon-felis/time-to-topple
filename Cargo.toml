@@ -29,6 +29,7 @@ clap = { version = "4.5.39", features = ["derive"] }
 dolly = "0.6.0"
 egui = "0.31.1"
 ordered-float = "5.0.0"
+serde = { version = "1.0.219", features = ["derive"] }
 
 # These lints may be important signals about code quality, but normal Bevy code
 # commonly triggers them and the CI workflow treats them as errors, so we've

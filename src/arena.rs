@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use bevy_yoleck::prelude::*;
 use bevy_yoleck::vpeol_3d::{Vpeol3dPosition, Vpeol3dRotation, Vpeol3dScale};
 use ordered_float::OrderedFloat;
+use serde::{Deserialize, Serialize};
 
 use crate::utils::CachedPbrMaker;
 
@@ -16,11 +17,13 @@ impl Plugin for ArenaPlugin {
                 .with::<Vpeol3dPosition>()
                 .with::<Vpeol3dScale>()
                 .with::<Vpeol3dRotation>()
+                .with::<BlockFriction>()
                 .insert_on_init(|| (IsBlock))
         });
 
         app.add_yoleck_edit_system(resize_block);
         app.add_yoleck_edit_system(rotate_block);
+        app.add_yoleck_edit_system(set_block_friction);
 
         app.add_systems(YoleckSchedule::Populate, populate_block);
     }
@@ -29,8 +32,22 @@ impl Plugin for ArenaPlugin {
 #[derive(Component)]
 pub struct IsBlock;
 
-fn populate_block(mut populate: YoleckPopulate<(), With<IsBlock>>, mut pbr: CachedPbrMaker) {
-    populate.populate(|ctx, mut cmd, ()| {
+#[derive(Component, YoleckComponent, Serialize, Deserialize, PartialEq, Clone)]
+struct BlockFriction(f32);
+
+impl Default for BlockFriction {
+    fn default() -> Self {
+        Self(10.0)
+    }
+}
+
+fn set_block_friction(mut ui: ResMut<YoleckUi>, mut edit: YoleckEdit<&mut BlockFriction>) {
+    let Ok(mut friction) = edit.single_mut() else { return };
+    ui.add(egui::Slider::new(&mut friction.0, 0.0..=10.0).text("Friction"));
+}
+
+fn populate_block(mut populate: YoleckPopulate<&BlockFriction, With<IsBlock>>, mut pbr: CachedPbrMaker) {
+    populate.populate(|ctx, mut cmd, BlockFriction(friction)| {
         if ctx.is_first_time() {
             cmd.insert(pbr.make_pbr_with(
                 || Mesh::from(Cuboid::new(1.0, 1.0, 1.0)),
@@ -38,7 +55,9 @@ fn populate_block(mut populate: YoleckPopulate<(), With<IsBlock>>, mut pbr: Cach
             ));
             cmd.insert(RigidBody::Static);
             cmd.insert(Collider::rectangle(1.0, 1.0));
-            cmd.insert(Friction::new(10.0));
+        }
+        if !ctx.is_in_editor() {
+            cmd.insert(Friction::new(*friction));
         }
     });
 }

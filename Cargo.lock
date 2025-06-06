@@ -5473,6 +5473,7 @@ dependencies = [
  "dolly",
  "egui",
  "ordered-float 5.0.0",
+ "serde",
 ]
 
 [[package]]
