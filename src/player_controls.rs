@@ -50,7 +50,13 @@ fn add_controls_to_player(mut populate: YoleckPopulate<(), With<IsPlayer>>) {
 
         input_map
             .bind::<PlayerJump>()
-            .to((KeyCode::Space, KeyCode::KeyJ, GamepadButton::South));
+            .to((
+                KeyCode::Space,
+                KeyCode::ArrowUp,
+                KeyCode::KeyW,
+                KeyCode::KeyJ,
+                GamepadButton::South,
+            ));
 
         input_map.bind::<PlayerPickUp>().to((
             KeyCode::ControlLeft,
