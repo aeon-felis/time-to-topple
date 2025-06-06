@@ -5,11 +5,11 @@ use bevy_tnua_avian2d::TnuaAvian2dSensorShape;
 use bevy_yoleck::prelude::*;
 use bevy_yoleck::vpeol::VpeolWillContainClickableChildren;
 use bevy_yoleck::vpeol_3d::Vpeol3dPosition;
-use ordered_float::OrderedFloat;
 
-use crate::arena::IsBlock;
+use crate::arena::calculate_lowest_y;
+use crate::camera::CameraTarget;
 use crate::picking_up::Picker;
-use crate::{AppState, During};
+use crate::{AppState, During, GameOverReason};
 
 pub struct PlayerPlugin;
 
@@ -18,7 +18,7 @@ impl Plugin for PlayerPlugin {
         app.add_yoleck_entity_type({
             YoleckEntityType::new("Player")
                 .with::<Vpeol3dPosition>()
-                .insert_on_init(|| IsPlayer)
+                .insert_on_init(|| (IsPlayer, CameraTarget))
         });
         app.add_systems(YoleckSchedule::Populate, populate_player);
         app.add_systems(
@@ -30,7 +30,12 @@ impl Plugin for PlayerPlugin {
             )
                 .in_set(During::Gameplay),
         );
-        app.add_systems(Update, kill_player_when_they_fall.in_set(During::Gameplay));
+        app.add_systems(
+            Update,
+            calculate_lowest_y
+                .pipe(kill_player_when_they_fall)
+                .in_set(During::Gameplay),
+        );
     }
 }
 
@@ -214,21 +219,15 @@ fn animate_player(
 }
 
 fn kill_player_when_they_fall(
-    objects_query: Query<&GlobalTransform, With<IsBlock>>,
+    lowest_y: In<Option<f32>>,
     players_query: Query<&GlobalTransform, With<IsPlayer>>,
     mut app_state: ResMut<NextState<AppState>>,
+    mut game_over_reason: ResMut<GameOverReason>,
 ) {
-    let Some(lowest_y) = objects_query
-        .iter()
-        // .map(|transform| transform.transform_point(0.5 * Vec3::Y).y)
-        .map(|transform| transform.translation().y)
-        .min_by_key(|y| OrderedFloat(*y))
-    else {
-        return;
-    };
+    let Some(lowest_y) = *lowest_y else { return };
     for player_transform in players_query.iter() {
-        let player_below_level = player_transform.translation().y - lowest_y;
-        if player_below_level < -50.0 {
+        if player_transform.translation().y < lowest_y {
+            *game_over_reason = GameOverReason::PlayerFell;
             app_state.set(AppState::GameOver);
         }
     }

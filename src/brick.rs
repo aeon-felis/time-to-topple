@@ -4,6 +4,7 @@ use bevy_yoleck::prelude::*;
 use bevy_yoleck::vpeol_3d::Vpeol3dPosition;
 
 use crate::picking_up::Pickable;
+use crate::topple_detection::Toppleable;
 
 pub struct BrickPlugin;
 
@@ -12,7 +13,7 @@ impl Plugin for BrickPlugin {
         app.add_yoleck_entity_type({
             YoleckEntityType::new("Brick")
                 .with::<Vpeol3dPosition>()
-                .insert_on_init(|| (IsBrick))
+                .insert_on_init(|| (IsBrick, Toppleable::Standing))
         });
 
         app.add_yoleck_entity_type({
@@ -24,6 +25,7 @@ impl Plugin for BrickPlugin {
                         Pickable {
                             hold_at_offset: -2.0 * Vec2::Y,
                         },
+                        Toppleable::Standing,
                     )
                 })
         });

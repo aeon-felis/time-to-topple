@@ -6,8 +6,10 @@ mod menu;
 mod picking_up;
 mod player;
 mod player_controls;
+mod topple_detection;
 mod utils;
 
+use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
 use bevy_yoleck::prelude::YoleckSyncWithEditorState;
 
@@ -19,6 +21,7 @@ use self::menu::MenuPlugin;
 use self::picking_up::PickingUpPlugin;
 use self::player::PlayerPlugin;
 use self::player_controls::PlayerControlsPlugin;
+use self::topple_detection::ToppleDetectionPlugin;
 
 pub struct TimeToTopplePlugin {
     pub is_editor: bool,
@@ -27,14 +30,21 @@ pub struct TimeToTopplePlugin {
 
 impl Plugin for TimeToTopplePlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(
-            Update,
-            (
-                During::Menu.run_if(|state: Res<State<AppState>>| state.is_menu()),
-                During::Gameplay.run_if(in_state(AppState::Game)),
-            ),
-        );
+        for system_set in [Update.intern(), FixedUpdate.intern()] {
+            app.configure_sets(
+                system_set,
+                (
+                    During::Menu.run_if(|state: Res<State<AppState>>| state.is_menu()),
+                    During::Gameplay.run_if(in_state(AppState::Game)),
+                ),
+            );
+        }
         app.insert_state(AppState::MainMenu);
+        app.insert_resource(GameOverReason::Unset);
+        app.add_systems(
+            OnEnter(AppState::Game),
+            GameOverReason::reset_when_gameplay_starts,
+        );
         app.add_plugins(TimeToToppleCameraPlugin);
         if self.is_editor {
             app.add_plugins(YoleckSyncWithEditorState {
@@ -66,6 +76,7 @@ impl Plugin for TimeToTopplePlugin {
         app.add_plugins(PlayerControlsPlugin);
         app.add_plugins(BrickPlugin);
         app.add_plugins(PickingUpPlugin);
+        app.add_plugins(ToppleDetectionPlugin);
         //app.add_plugins(FloatingTextPlugin);
 
         app.add_systems(Update, enable_disable_physics);
@@ -88,6 +99,19 @@ pub enum AppState {
     Game,
     LevelCompleted,
     GameOver,
+}
+
+#[derive(Resource)]
+pub enum GameOverReason {
+    Unset,
+    PlayerFell,
+    TilesStillStanding(usize),
+}
+
+impl GameOverReason {
+    fn reset_when_gameplay_starts(mut res: ResMut<Self>) {
+        *res = Self::Unset;
+    }
 }
 
 impl AppState {

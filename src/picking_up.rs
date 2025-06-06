@@ -2,6 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_enhanced_input::prelude::*;
 
+use crate::camera::CameraTarget;
 use crate::player::PlayerFacing;
 
 pub struct PickingUpPlugin;
@@ -34,7 +35,7 @@ impl Picker {
     }
 }
 
-const PICKER_OFFSET: Vec2 = Vec2::new(0.0, 3.0);
+pub const PICKER_OFFSET: Vec2 = Vec2::new(0.0, 3.0);
 
 #[derive(Debug, Component)]
 pub struct HeldBy(Entity);
@@ -48,7 +49,12 @@ pub enum HeldStatus {
 
 fn initiate_pick_up(
     trigger: Trigger<Started<PlayerPickUp>>,
-    mut picker_query: Query<(&mut Picker, &Position, &PlayerFacing)>,
+    mut picker_query: Query<
+        (&mut Picker, &Position, &PlayerFacing),
+        // When we lose camera target that means the toppling has begun - and we no longer
+        // want to allow the player to pick bricks.
+        With<CameraTarget>,
+    >,
     pickable_filter: Query<(), (With<Pickable>, Without<HeldStatus>)>,
     mut held_query: Query<(&HeldBy, &mut HeldStatus), With<Pickable>>,
     spatial_query: Res<SpatialQueryPipeline>,

@@ -4,6 +4,7 @@ use bevy_tnua::prelude::*;
 use bevy_yoleck::prelude::*;
 
 use crate::During;
+use crate::camera::CameraTarget;
 use crate::picking_up::{Picker, PlayerPickUp};
 use crate::player::{IsPlayer, PlayerFacing};
 
@@ -68,11 +69,14 @@ fn apply_controls(
         &mut TnuaController,
         &mut PlayerFacing,
         &Picker,
+        Has<CameraTarget>,
     )>,
 ) {
-    for (input, mut controller, mut player_facing, picker) in query.iter_mut() {
+    for (input, mut controller, mut player_facing, picker, has_camera_target) in query.iter_mut() {
         let controller = controller.as_mut();
-        if picker.immobilized {
+        // When we lose camera target that means the toppling has begun - and we no longer
+        // want to allow the player to move.
+        if picker.immobilized || !has_camera_target {
             controller.neutralize_basis();
             continue;
         }

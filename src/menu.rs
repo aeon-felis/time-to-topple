@@ -4,7 +4,7 @@ use bevy_egui_kbgp::prelude::*;
 use bevy_yoleck::prelude::*;
 
 use crate::level_handling::LevelProgress;
-use crate::{ActionForKbgp, AppState, During};
+use crate::{ActionForKbgp, AppState, During, GameOverReason};
 
 #[derive()]
 pub struct MenuPlugin;
@@ -193,7 +193,11 @@ fn pause_menu(mut frame_ui: ResMut<FrameUi>, mut next_state: ResMut<NextState<Ap
     }
 }
 
-fn game_over_menu(mut frame_ui: ResMut<FrameUi>, mut next_state: ResMut<NextState<AppState>>) {
+fn game_over_menu(
+    mut frame_ui: ResMut<FrameUi>,
+    mut next_state: ResMut<NextState<AppState>>,
+    game_over_reason: Res<GameOverReason>,
+) {
     let Some(ui) = frame_ui.0.as_mut() else {
         return;
     };
@@ -203,6 +207,21 @@ fn game_over_menu(mut frame_ui: ResMut<FrameUi>, mut next_state: ResMut<NextStat
             .strong()
             .color(egui::Color32::RED),
     );
+    if let Some(reason_text) = match *game_over_reason {
+        GameOverReason::Unset => None,
+        GameOverReason::PlayerFell => Some("player fell off the arena".to_owned()),
+        GameOverReason::TilesStillStanding(1) => Some("1 tile is still standing".to_owned()),
+        GameOverReason::TilesStillStanding(num_still_standing) => {
+            Some(format!("{num_still_standing} tiles are still standing"))
+        }
+    } {
+        ui.label(
+            egui::RichText::new(reason_text)
+                .size(20.0)
+                .strong()
+                .color(egui::Color32::RED),
+        );
+    }
     ui.add_space(20.0);
     if ui.kbgp_user_action() == Some(ActionForKbgp::Menu) {
         ui.kbgp_set_focus_label(FocusLabel::BackToMainMenu);

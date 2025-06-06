@@ -3,6 +3,7 @@ use bevy::color::palettes::css;
 use bevy::prelude::*;
 use bevy_yoleck::prelude::*;
 use bevy_yoleck::vpeol_3d::{Vpeol3dPosition, Vpeol3dRotation, Vpeol3dScale};
+use ordered_float::OrderedFloat;
 
 use crate::utils::CachedPbrMaker;
 
@@ -132,4 +133,12 @@ fn rotate_block(
             rotation.0 = new_rotation;
         }
     }
+}
+
+pub fn calculate_lowest_y(objects_query: Query<&GlobalTransform, With<IsBlock>>) -> Option<f32> {
+    objects_query
+        .iter()
+        .map(|transform| transform.translation().y)
+        .min_by_key(|y| OrderedFloat(*y))
+        .map(|y| y - 50.0)
 }
