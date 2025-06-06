@@ -42,11 +42,16 @@ impl Default for BlockFriction {
 }
 
 fn set_block_friction(mut ui: ResMut<YoleckUi>, mut edit: YoleckEdit<&mut BlockFriction>) {
-    let Ok(mut friction) = edit.single_mut() else { return };
+    let Ok(mut friction) = edit.single_mut() else {
+        return;
+    };
     ui.add(egui::Slider::new(&mut friction.0, 0.0..=10.0).text("Friction"));
 }
 
-fn populate_block(mut populate: YoleckPopulate<&BlockFriction, With<IsBlock>>, mut pbr: CachedPbrMaker) {
+fn populate_block(
+    mut populate: YoleckPopulate<&BlockFriction, With<IsBlock>>,
+    mut pbr: CachedPbrMaker,
+) {
     populate.populate(|ctx, mut cmd, BlockFriction(friction)| {
         if ctx.is_first_time() {
             cmd.insert(pbr.make_pbr_with(
@@ -157,7 +162,14 @@ fn rotate_block(
 pub fn calculate_lowest_y(objects_query: Query<&GlobalTransform, With<IsBlock>>) -> Option<f32> {
     objects_query
         .iter()
-        .map(|transform| transform.translation().y)
+        .flat_map(|transform| {
+            static FOUR_CORNERS: [Vec3; 4] = [
+                Vec3::new(0.5, 0.5, 0.0),
+                Vec3::new(-0.5, 0.5, 0.0),
+                Vec3::new(-0.5, -0.5, 0.0),
+                Vec3::new(0.5, -0.5, 0.0),
+            ];
+            FOUR_CORNERS.map(|corner| transform.transform_point(corner).y)
+        })
         .min_by_key(|y| OrderedFloat(*y))
-        .map(|y| y - 50.0)
 }

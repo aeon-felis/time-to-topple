@@ -31,7 +31,7 @@ impl Plugin for PlayerPlugin {
                 .in_set(During::Gameplay),
         );
         app.add_systems(
-            Update,
+            FixedUpdate,
             calculate_lowest_y
                 .pipe(kill_player_when_they_fall)
                 .in_set(During::Gameplay),
@@ -226,7 +226,7 @@ fn kill_player_when_they_fall(
 ) {
     let Some(lowest_y) = *lowest_y else { return };
     for player_transform in players_query.iter() {
-        if player_transform.translation().y < lowest_y {
+        if player_transform.translation().y < lowest_y - 20.0 {
             *game_over_reason = GameOverReason::PlayerFell;
             app_state.set(AppState::GameOver);
         }
