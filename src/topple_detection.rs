@@ -55,7 +55,7 @@ fn update_toppleable(
                 }
             }
             Toppleable::Falling { immobile_timer } => {
-                if 0.01 < linvel.length_squared() || 0.01 < angvel.abs() {
+                if 0.1 < linvel.length_squared() || 0.1 < angvel.abs() {
                     immobile_timer.reset();
                 } else if immobile_timer.tick(time.delta()).just_finished() {
                     *toppleable = Toppleable::Stopped;
@@ -85,6 +85,16 @@ fn detect_finish(
     mut app_state: ResMut<NextState<AppState>>,
     mut game_over_reason: ResMut<GameOverReason>,
 ) {
+    let mut status = [0; 4];
+    for (_, toppleable) in query.iter() {
+        status[match toppleable {
+            Toppleable::Standing => 0,
+            Toppleable::Falling { .. } => 1,
+            Toppleable::Stopped => 2,
+            Toppleable::FellOut => 3,
+        }] += 1;
+    }
+
     let mut any_standing = None;
     let mut num_still_standing = 0;
     let mut all_standing = true;
