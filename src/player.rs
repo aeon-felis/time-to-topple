@@ -91,11 +91,11 @@ fn populate_player(
         cmd.insert(RigidBody::Dynamic);
         // cmd.insert(Velocity::default());
         cmd.insert(Collider::capsule(0.5, 0.5));
-        cmd.insert(Friction::ZERO);
+        cmd.insert(Friction::ZERO.with_combine_rule(CoefficientCombine::Min));
 
         cmd.insert(TnuaController::default());
         cmd.insert(LockedAxes::ROTATION_LOCKED);
-        cmd.insert(TnuaAvian2dSensorShape(Collider::rectangle(0.45, 0.0)));
+        cmd.insert(TnuaAvian2dSensorShape(Collider::rectangle(0.5, 0.0)));
         // cmd.insert(ActiveEvents::COLLISION_EVENTS);
         // cmd.insert(SolverGroups {
         // memberships: crate::solver_groups::PLAYER,

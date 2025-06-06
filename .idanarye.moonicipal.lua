@@ -5,6 +5,7 @@ local P, cfg = moonicipal.import(require'idan.project.rust.bevy')
 cfg.crate_name = 'time_to_topple'
 cfg.setup_level_editor()
 cfg.extra_logging = { bevy_gltf_components = 'debug' }
+cfg.setup_pkv('TimeToTopple')
 
 function T:act()
     local buffers_loaded_in_this_tab = {}
