@@ -196,7 +196,7 @@ fn apply_forces_to_held_objects(
             }
             HeldStatus::Placed(dir) => {
                 let target_position =
-                    picker_position.0 + 2.0 * **dir - pickable.hold_at_offset - 1.0 * Vec2::Y;
+                    picker_position.0 + 1.5 * **dir - pickable.hold_at_offset - 1.0 * Vec2::Y;
                 let vec_to_target = target_position - held_position.0;
                 const LIFT_SPEED: f32 = 10.0;
                 let desired_velocity = if vec_to_target.dot(**dir) < 0.5 {
