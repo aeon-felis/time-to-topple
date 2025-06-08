@@ -12,6 +12,7 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<FrameUi>();
+        app.init_resource::<IgnoreMenuButton>();
         app.add_systems(Update, handle_user_kbgp_actions.in_set(During::Gameplay));
         app.add_systems(
             EguiContextPass,
@@ -32,17 +33,24 @@ impl Plugin for MenuPlugin {
     }
 }
 
+#[derive(Resource, Default)]
+struct IgnoreMenuButton(bool);
+
 fn handle_user_kbgp_actions(
     mut egui_contexts: EguiContexts,
+    mut ignore_menu_button: ResMut<IgnoreMenuButton>,
     mut next_state: ResMut<NextState<AppState>>,
 ) {
     let egui_context = egui_contexts.ctx_mut();
     let Some(action) = egui_context.kbgp_user_action() else {
+        ignore_menu_button.0 = false;
         return;
     };
     match action {
         ActionForKbgp::Menu => {
-            next_state.set(AppState::PauseMenu);
+            if !ignore_menu_button.0 {
+                next_state.set(AppState::PauseMenu);
+            }
         }
         ActionForKbgp::RestartLevel => {
             next_state.set(AppState::LoadLevel);
@@ -160,7 +168,11 @@ fn main_menu(mut frame_ui: ResMut<FrameUi>, mut next_state: ResMut<NextState<App
     }
 }
 
-fn pause_menu(mut frame_ui: ResMut<FrameUi>, mut next_state: ResMut<NextState<AppState>>) {
+fn pause_menu(
+    mut frame_ui: ResMut<FrameUi>,
+    mut ignore_menu_button: ResMut<IgnoreMenuButton>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
     let Some(ui) = frame_ui.0.as_mut() else {
         return;
     };
@@ -171,6 +183,7 @@ fn pause_menu(mut frame_ui: ResMut<FrameUi>, mut next_state: ResMut<NextState<Ap
         .kbgp_click_released()
         || ui.kbgp_user_action() == Some(ActionForKbgp::Menu)
     {
+        ignore_menu_button.0 = true;
         next_state.set(AppState::Game);
     }
     if ui.button("Retry").kbgp_navigation().kbgp_click_released() {
