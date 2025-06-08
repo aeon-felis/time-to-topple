@@ -1,4 +1,5 @@
 use avian2d::prelude::*;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
 use bevy_enhanced_input::prelude::*;
 
@@ -19,7 +20,16 @@ pub struct PlayerPickUp;
 impl Plugin for PickingUpPlugin {
     fn build(&self, app: &mut App) {
         app.add_observer(initiate_pick_up);
-        app.add_systems(FixedUpdate, apply_forces_to_held_objects);
+        app.add_systems(
+            FixedUpdate,
+            (
+                apply_forces_to_held_objects,
+                InitialCollisions::initiate,
+                InitialCollisions::clear,
+                break_hold_when_pickable_collides_with_something
+                    .after(apply_forces_to_held_objects),
+            ),
+        );
     }
 }
 
@@ -207,6 +217,76 @@ fn apply_forces_to_held_objects(
                     picker.clear();
                     // *held_status = HeldStatus::Carried;
                     // picker.immobilized = false;
+                }
+            }
+        }
+    }
+}
+
+#[derive(Component)]
+struct InitialCollisions(HashMap<Entity, bool>);
+
+impl InitialCollisions {
+    fn initiate(
+        query: Query<Entity, (With<HeldBy>, Without<InitialCollisions>)>,
+        collisions: Collisions,
+        mut commands: Commands,
+    ) {
+        for held_entity in query.iter() {
+            commands.entity(held_entity).insert(InitialCollisions(
+                collisions
+                    .entities_colliding_with(held_entity)
+                    .map(|e| (e, true))
+                    .collect(),
+            ));
+        }
+    }
+
+    fn clear(
+        query: Query<Entity, (Without<HeldBy>, With<InitialCollisions>)>,
+        mut commands: Commands,
+    ) {
+        for no_longer_held_entity in query.iter() {
+            commands
+                .entity(no_longer_held_entity)
+                .try_remove::<InitialCollisions>();
+        }
+    }
+}
+
+fn break_hold_when_pickable_collides_with_something(
+    mut pickable_query: Query<(Entity, &HeldBy, &mut InitialCollisions, &mut ExternalForce)>,
+    mut picker_query: Query<&mut Picker>,
+    collisions: Collisions,
+    mut commands: Commands,
+) {
+    for (pickable_entity, &HeldBy(held_by_entity), mut initial_collisions, mut force) in
+        pickable_query.iter_mut()
+    {
+        for still_touching_this_step in initial_collisions.0.values_mut() {
+            *still_touching_this_step = false;
+        }
+        let mut any_colliding = false;
+        for colliding_entity in collisions.entities_colliding_with(pickable_entity) {
+            if colliding_entity == held_by_entity {
+                continue;
+            }
+            if let Some(still_touching_this_step) = initial_collisions.0.get_mut(&colliding_entity)
+            {
+                *still_touching_this_step = true;
+                continue;
+            }
+            any_colliding = true;
+        }
+
+        if any_colliding {
+            force.clear();
+            commands
+                .entity(pickable_entity)
+                .remove::<(HeldBy, HeldStatus)>();
+            if let Ok(mut picker) = picker_query.get_mut(held_by_entity) {
+                if picker.holding == Some(pickable_entity) {
+                    picker.clear();
                 }
             }
         }
