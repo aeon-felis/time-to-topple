@@ -30,9 +30,9 @@ pub struct TimeToTopplePlugin {
 
 impl Plugin for TimeToTopplePlugin {
     fn build(&self, app: &mut App) {
-        for system_set in [Update.intern(), FixedUpdate.intern()] {
+        for schedule in [Update.intern(), FixedUpdate.intern()] {
             app.configure_sets(
-                system_set,
+                schedule,
                 (
                     During::Menu.run_if(|state: Res<State<AppState>>| state.is_menu()),
                     During::Gameplay.run_if(in_state(AppState::Game)),
